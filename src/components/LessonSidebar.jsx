@@ -174,6 +174,26 @@ const LessonSidebar = ({
           </span>
         </div>
       )}
+
+      {/* --- YASAL UYARI (DISCLAIMER) --- */}
+      {isOpen && (
+        <div
+          style={{
+            fontSize: "10px",
+            color: "#888",
+            padding: "15px",
+            borderTop: "1px solid #ddd",
+            marginTop: "auto", // Flex yapısında bu yazıyı en dibe iter
+            textAlign: "left",
+            lineHeight: "1.4",
+            backgroundColor: "#f8fafc", // Çok hafif bir gri arkaplan
+          }}
+        >
+          Bu platform, açık kaynaklı <b>abaplint</b> altyapısı kullanılarak
+          eğitim amaçlı geliştirilmiştir. SAP SE ile hiçbir resmi bağı yoktur.
+          SAP ve ABAP, SAP SE'nin tescilli ticari markalarıdır.
+        </div>
+      )}
     </div>
   );
 };
