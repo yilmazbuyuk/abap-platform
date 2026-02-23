@@ -221,8 +221,8 @@ START-OF-SELECTION.
   {
     id: "u3-l4",
     tcode: "SE38",
-    title: "4. Temizleme ve Dönüştürme (CONDENSE & TRANSLATE)",
-    desc: "Metinlerdeki gereksiz boşlukları silme (CONDENSE) ve büyük/küçük harf standardizasyonu (TRANSLATE).",
+    title: "4. Temizleme ve Dönüştürme (CONDENSE & to_upper)",
+    desc: "Metinlerdeki gereksiz boşlukları silme (CONDENSE) ve büyük/küçük harf standardizasyonu (to_upper / to_lower).",
     code: `REPORT z_ders_u3_4_condense.
 
 START-OF-SELECTION.
@@ -246,7 +246,6 @@ START-OF-SELECTION.
   CONDENSE lv_temiz.
 
   WRITE: / |CONDENSE Edilmiş Hali: [{ lv_temiz }]|.
-  " Çıktı: [SAP ABAP Ogreniyorum] (Aralarda sadece tek boşluk kaldı)
 
 * ======================================================================
 * 2. TÜM BOŞLUKLARI SİLME (NO-GAPS)
@@ -265,31 +264,25 @@ START-OF-SELECTION.
   WRITE: / |Temiz IBAN   : { lv_iban }|.
 
 * ======================================================================
-* 3. BÜYÜK / KÜÇÜK HARFE ÇEVİRME (TRANSLATE)
+* 3. BÜYÜK / KÜÇÜK HARFE ÇEVİRME (to_upper & to_lower)
 * Veritabanında arama yaparken ('Ahmet' veya 'AHMET') büyük/küçük harf 
 * duyarlılığından kurtulmak için metinleri standartlaştırmak gerekir.
+* Not: Eski sistemlerde TRANSLATE komutu kullanılırdı, modern ABAP'ta
+* to_upper() ve to_lower() fonksiyonları kullanılır.
 * ======================================================================
   DATA: lv_isim TYPE string VALUE 'yILmAz çEVik'.
 
   WRITE: /.
-  WRITE: / '--- TRANSLATE (BÜYÜK/KÜÇÜK HARF DÖNÜŞÜMÜ) ---'.
+  WRITE: / '--- MODERN HARF DÖNÜŞÜMÜ (to_upper / to_lower) ---'.
   WRITE: / |Orijinal İsim: { lv_isim }|.
 
-  " Hepsini BÜYÜK harf yap (TO UPPER CASE)
-  TRANSLATE lv_isim TO UPPER CASE.
+  " Hepsini BÜYÜK harf yap (to_upper)
+  lv_isim = to_upper( lv_isim ).
   WRITE: / |Büyük Harf   : { lv_isim }|.
 
-  " Hepsini KÜÇÜK harf yap (TO LOWER CASE)
-  TRANSLATE lv_isim TO LOWER CASE.
-  WRITE: / |Küçük Harf   : { lv_isim }|.
-
-* ======================================================================
-* 4. MODERN ABAP İPUCU (BONUS)
-* Yeni nesil S/4HANA sistemlerinde bu işlemler satır satır komut yerine,
-* tıpkı diğer modern dillerdeki gibi fonksiyonlarla tek satırda yapılabilir:
-* * lv_isim = to_upper( condense( val = lv_kirli ) ).
-* ======================================================================
- `,
+  " Hepsini KÜÇÜK harf yap (to_lower)
+  lv_isim = to_lower( lv_isim ).
+  WRITE: / |Küçük Harf   : { lv_isim }|.`,
   },
   {
     id: "u3-l5",
