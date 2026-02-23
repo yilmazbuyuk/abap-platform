@@ -14,21 +14,65 @@ START-OF-SELECTION.
     id: "u1-l2",
     tcode: "SE38",
     title: "2. Değişkenler ve Tipler",
-    desc: "Veri saklamak için DATA komutu ve temel tipler.",
-    code: `REPORT z_ders_2.
+    desc: "ABAP'ta veri saklamak için DATA komutu ve temel veri tipleri (Char, Integer, Date, Time, Packed vb.).",
+    code: `REPORT z_ders_2_tipler.
 
 START-OF-SELECTION.
-  DATA: lv_sayi  TYPE i,
-        lv_metin TYPE string.
+* ======================================================================
+* 1. TEMEL VERİ TİPLERİ (DATA TYPES)
+* ABAP'ta değişken tanımlamak için "DATA:" komutu kullanılır.
+* Zincirleme (chain) tanım yapmak için iki nokta (:) koyarız.
+* ======================================================================
 
-  lv_sayi = 100.
-  lv_metin = 'ABAP Ogreniyorum'.
+  DATA: 
+    lv_tam_sayi   TYPE i,                   " Integer: Tam Sayı
+    lv_ondalikli  TYPE p DECIMALS 2,        " Packed: Ondalıklı Sayı (Para, Miktar vb.)
+    lv_metin      TYPE string,              " String: Uzunluğu dinamik olarak değişen metin
+    lv_karakter   TYPE c LENGTH 10,         " Char: Sabit uzunluklu metin (10 karakter)
+    lv_sayisal_c  TYPE n LENGTH 5,          " Numc: Sadece rakam içeren metin (Başına sıfır ekler)
+    lv_tarih      TYPE d,                   " Date: Tarih (YYYYMMDD formatında tutulur)
+    lv_saat       TYPE t.                   " Time: Saat (HHMMSS formatında tutulur)
 
-  WRITE 'Sayı Değeri:'.
-  WRITE lv_sayi.
+* ======================================================================
+* 2. DEĞİŞKENLERE DEĞER ATAMA (ASSIGNMENT)
+* Eşittir (=) operatörü ile değişkenlerin içini doldururuz.
+* Metinler her zaman tek tırnak (') içinde yazılır.
+* ======================================================================
   
-  WRITE / 'Metin Değeri:'.
-  WRITE lv_metin.`,
+  lv_tam_sayi   = 42.
+  lv_ondalikli  = '150.75'.                 " Ondalıklı atamalar güvenli olması için tırnakla yapılabilir.
+  lv_metin      = 'ABAP Platformuna Hos Geldiniz!'.
+  lv_karakter   = 'SAP ABAP'.               " 10 karaktere tamamlamak için sonuna boşluk ekler.
+  lv_sayisal_c  = 123.                      " 5 haneli olduğu için veritabanında '00123' olarak tutulur.
+  
+  " Tarih ve saat için ABAP'ın hazır sistem değişkenlerini (SY) kullanabiliriz.
+  lv_tarih      = sy-datum.                 " sy-datum: Sistemin bugünkü tarihi
+  lv_saat       = sy-uzeit.                 " sy-uzeit: Sistemin o anki saati
+
+* ======================================================================
+* 3. EKRANA YAZDIRMA (OUTPUT)
+* İpucu: Yeni bir satıra geçmek için "/" işareti kullanılır.
+* ======================================================================
+
+  WRITE: '🚀 ABAP VERİ TİPLERİ REHBERİ'.
+  WRITE: /. " Boş satır bırakır
+  
+  WRITE: / '--- SAYISAL TİPLER ---'.
+  WRITE: / 'Tam Sayı (i)        :', lv_tam_sayi.
+  WRITE: / 'Ondalıklı Sayı (p)  :', lv_ondalikli.
+  
+  WRITE: /. 
+  
+  WRITE: / '--- METİNSEL TİPLER ---'.
+  WRITE: / 'Dinamik Metin (string):', lv_metin.
+  WRITE: / 'Sabit Metin (c)       :', lv_karakter.
+  WRITE: / 'Sayısal Metin (n)     :', lv_sayisal_c.
+  
+  WRITE: /.
+  
+  WRITE: / '--- ZAMAN TİPLERİ (SİSTEM DEĞİŞKENLERİ) ---'.
+  WRITE: / 'Sistem Tarihi (d)   :', lv_tarih.
+  WRITE: / 'Sistem Saati (t)    :', lv_saat.`,
   },
   {
     id: "u1-l3",
