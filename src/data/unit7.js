@@ -168,21 +168,17 @@ START-OF-SELECTION.
 * ======================================================================
 * MODERN STRING TEMPLATES (|...|)
 * ABAP 7.40 sürümüyle gelen bu özellik, metin yönetimini kolaylaştırır.
-* 1. Metinler | sembolleri arasına yazılır.
-* 2. Değişkenler { } süslü parantez içine alınır.
-* 3. Boşluklar, metin içinde nasıl bırakıldıysa öyle görünür.
 * ======================================================================
   DATA: lv_ad    TYPE string VALUE 'Can',
         lv_soyad TYPE string VALUE 'Yücel',
         lv_yas   TYPE i      VALUE 35,
         lv_tarih TYPE d      VALUE sy-datum,
+        lv_vbeln TYPE c LENGTH 10 VALUE '0000085632', " Hata veren değişkeni tanımladık
         lv_mesaj TYPE string.
 
   WRITE: '✍️ MODERN ABAP METİN YÖNETİMİ'.
   WRITE: / '--------------------------------------------------'.
 
-  " ESKİ USÜL (Hantal): CONCATENATE lv_ad lv_soyad INTO lv_mesaj SEPARATED BY SPACE.
-  
   " YENİ NESİL (Zarif):
   lv_mesaj = |Sayın { lv_ad } { lv_soyad }, hoş geldiniz!|.
   WRITE: / lv_mesaj.
@@ -190,7 +186,6 @@ START-OF-SELECTION.
 
 * ======================================================================
 * FORMATLAMA ÖZELLİKLERİ (IN-PLACE FORMATTING)
-* String template sadece birleştirme yapmaz, değişkeni o an dönüştürür.
 * ======================================================================
   
   
@@ -211,12 +206,11 @@ START-OF-SELECTION.
 
 * ======================================================================
 * ALPHA CONVERSION (ÖNEMLİ!)
-* Veritabanından gelen '0000012345' gibi sayıların başındaki 
-* sıfırları atmak için ALPHA = OUT kullanmak hayat kurtarır.
 * ======================================================================
-  DATA(lv_vbeln) = '0000085632'.
   WRITE: /.
-  WRITE: / |Sıfırları Atılmış Veri: { lv_vbeln ALPHA = OUT }|. " Çıktı: 85632`,
+  " ALPHA = OUT: Başındaki sıfırları atarak gösterir.
+  WRITE: / |Orijinal Veri : { lv_vbeln }|.
+  WRITE: / |Sıfırları Atılmış: { lv_vbeln ALPHA = OUT }|. " Çıktı: 85632`,
   },
   {
     id: "u7-l4",
