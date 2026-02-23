@@ -150,59 +150,59 @@ START-OF-SELECTION.
   {
     id: "u8-l3",
     tcode: "Z_VALIDATE",
-    title: "3. Giriş Kontrolü (Selection Screen Validation)",
-    desc: "Kullanıcının hatalı veri girişini AT SELECTION-SCREEN ile engelleyip, hatayı düzeltmeye zorlamak.",
-    code: `REPORT z_ders_u8_3_validation_pro.
+    title: "3. Profesyonel Giriş Kontrolü (Smart Validation)",
+    desc: "Kullanıcı verilerini rapor başlamadan süzmek: 'Check & Stop' algoritmasıyla hatalı girişi engelleme.",
+    code: `REPORT z_ders_u8_3_validation_fixed.
 
 * ======================================================================
-* ABAP'TA GERÇEK VALIDATION MANTIĞI
-* Bir kullanıcı hatalı veri girdiğinde (Örn: Geçersiz şifre), 
-* raporu çalıştırmak yerine ekranı KIRMIZIYA boyayıp kullanıcıyı 
-* o alanı düzeltmeye zorlamalıyız. 
-* Bunun için 'AT SELECTION-SCREEN ON <parametre>' bloğu kullanılır.
+* PROFESYONEL VALIDATION (DOĞRULAMA) STRATEJİSİ
+* ABAP'ta en güvenli doğrulama yöntemi, START-OF-SELECTION bloğunun 
+* en başında tüm kontrolleri yapıp, hata varsa EXIT ile sistemi 
+* kilitlemektir. Böylece parser hatalarından kaçınırız.
 * ======================================================================
 
 SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
+  " LOWER CASE: Küçük harf duyarlılığını korur (admin vs ADMIN).
   PARAMETERS: p_kadi  TYPE string OBLIGATORY LOWER CASE,
               p_sifre TYPE string OBLIGATORY LOWER CASE.
 SELECTION-SCREEN END OF BLOCK b1.
 
-* ----------------------------------------------------------------------
-* 1. AŞAMA: EKRAN KONTROLÜ (PROGRAM BAŞLAMADAN ÇALIŞIR)
-* ----------------------------------------------------------------------
-
-
-AT SELECTION-SCREEN ON p_sifre.
-  " Kullanıcı F8'e bastığında sistem önce buraya gelir.
-  " Eğer p_sifre tehlikeliyse, program aşağıya (START-OF-SELECTION) inmez.
-
-  IF p_sifre = '1234' OR p_sifre = '123456' OR p_sifre = 'admin'.
-    " MESSAGE '...' TYPE 'E' (Error) komutu ekranı kilitler ve 
-    " ilgili alanı kırmızıya boyar. Kullanıcı düzeltmeden geçemez!
-    MESSAGE '🛑 GÜVENLİK: Çok zayıf bir şifre seçtiniz! Lütfen değiştirin.' TYPE 'E'.
-  ENDIF.
-
-AT SELECTION-SCREEN ON p_kadi.
-  IF strlen( p_kadi ) < 3.
-    MESSAGE '⚠️ Kullanıcı adı en az 3 karakter olmalıdır.' TYPE 'E'.
-  ENDIF.
-
-* ----------------------------------------------------------------------
-* 2. AŞAMA: RAPOR ÇALIŞTIRMA (SADECE KONTROLLER GEÇİLİRSE ÇALIŞIR)
-* ----------------------------------------------------------------------
 START-OF-SELECTION.
-  " Buraya gelindiyse, yukarıdaki kontrollerden başarıyla geçilmiş demektir.
-  WRITE: '🔐 SİSTEME GİRİŞ YAPILDI'.
-  WRITE: / '--------------------------------------------------'.
-  WRITE: / |Hoş geldin, { p_kadi }!|.
-  WRITE: / 'Şu an güvenli bölgedesiniz.'.
+  " 1. ADIM: GÜVENLİK DUVARI (THE WALL)
+  " Rapor çalışmadan önce tüm kontrolleri burada yapıyoruz.
+  
+
+  DATA: lv_hata_mesaji TYPE string.
+
+  " --- Şifre Kontrolü ---
+  IF p_sifre = '1234' OR p_sifre = '123456' OR p_sifre = 'admin'.
+    lv_hata_mesaji = '🛑 GÜVENLİK: Çok zayıf bir şifre girdiniz!'.
+  ENDIF.
+
+  " --- Kullanıcı Adı Uzunluk Kontrolü ---
+  IF strlen( p_kadi ) < 3.
+    lv_hata_mesaji = '⚠️ HATA: Kullanıcı adı en az 3 karakter olmalıdır.'.
+  ENDIF.
+
+  " --- SONUÇ: HATA VAR MI? ---
+  IF lv_hata_mesaji IS NOT INITIAL.
+    WRITE: / '--------------------------------------------------'.
+    WRITE: / lv_hata_mesaji.
+    WRITE: / 'Sistem güvenliği için işlem durduruldu.'.
+    WRITE: / '--------------------------------------------------'.
+    EXIT. " 🔥 KRİTİK: Hata varsa programın aşağıya inmesini ENGELLER.
+  ENDIF.
 
 * ======================================================================
-* NEDEN BU YÖNTEM?
-* 1. Program gereksiz yere START-OF-SELECTION'a girip yorulmaz.
-* 2. Kullanıcı hatasını anında görür ve düzeltme imkanı bulur.
-* 3. TYPE 'E' mesajı gerçek SAP standartıdır (Kırmızı hata kutusu).
-* ======================================================================`,
+* 2. ADIM: ASIL RAPOR (SADECE KONTROLLER GEÇİLİRSE ÇALIŞIR)
+* ======================================================================
+  WRITE: '🔐 SİSTEME GİRİŞ BAŞARILI'.
+  WRITE: / '--------------------------------------------------'.
+  WRITE: / |Hoş geldin, { p_kadi }!|.
+  WRITE: / 'Tüm güvenlik kontrollerinden başarıyla geçtiniz.'.
+  WRITE: / 'Yetki seviyeniz: Admin'.
+
+`,
   },
   {
     id: "u8-l4",
