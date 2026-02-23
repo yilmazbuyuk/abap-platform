@@ -150,68 +150,58 @@ START-OF-SELECTION.
   {
     id: "u8-l3",
     tcode: "Z_VALIDATE",
-    title: "3. Zorunlu Alan ve Kontrol (Validation)",
-    desc: "Kullanıcı veriyi eksik veya hatalı girerse ne olur? OBLIGATORY kullanımı ve manuel kontrol mekanizmaları.",
-    code: `REPORT z_ders_u8_3_validation.
+    title: "3. Giriş Kontrolü (Selection Screen Validation)",
+    desc: "Kullanıcının hatalı veri girişini AT SELECTION-SCREEN ile engelleyip, hatayı düzeltmeye zorlamak.",
+    code: `REPORT z_ders_u8_3_validation_pro.
 
 * ======================================================================
-* VALIDATION (DOĞRULAMA) NEDİR?
-* Kullanıcının girdiği verilerin "beklenen" kurallara uyup uymadığını 
-* kontrol etme işlemidir. İki aşamalı yapılır:
-* 1. Teknik Kontrol: OBLIGATORY ile alanın boş geçilmesini engellemek.
-* 2. Mantıksal Kontrol: IF blokları ile verinin içeriğini denetlemek.
+* ABAP'TA GERÇEK VALIDATION MANTIĞI
+* Bir kullanıcı hatalı veri girdiğinde (Örn: Geçersiz şifre), 
+* raporu çalıştırmak yerine ekranı KIRMIZIYA boyayıp kullanıcıyı 
+* o alanı düzeltmeye zorlamalıyız. 
+* Bunun için 'AT SELECTION-SCREEN ON <parametre>' bloğu kullanılır.
 * ======================================================================
 
 SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
-  " OBLIGATORY: Bu parametre dolmadan kullanıcı F8'e basarsa 
-  " SAP otomatik olarak "Fill in all required entry fields" uyarısı verir.
-  PARAMETERS: p_kadi  TYPE string OBLIGATORY,
-              p_sifre TYPE string OBLIGATORY.
+  PARAMETERS: p_kadi  TYPE string OBLIGATORY LOWER CASE,
+              p_sifre TYPE string OBLIGATORY LOWER CASE.
 SELECTION-SCREEN END OF BLOCK b1.
 
+* ----------------------------------------------------------------------
+* 1. AŞAMA: EKRAN KONTROLÜ (PROGRAM BAŞLAMADAN ÇALIŞIR)
+* ----------------------------------------------------------------------
+
+
+AT SELECTION-SCREEN ON p_sifre.
+  " Kullanıcı F8'e bastığında sistem önce buraya gelir.
+  " Eğer p_sifre tehlikeliyse, program aşağıya (START-OF-SELECTION) inmez.
+
+  IF p_sifre = '1234' OR p_sifre = '123456' OR p_sifre = 'admin'.
+    " MESSAGE '...' TYPE 'E' (Error) komutu ekranı kilitler ve 
+    " ilgili alanı kırmızıya boyar. Kullanıcı düzeltmeden geçemez!
+    MESSAGE '🛑 GÜVENLİK: Çok zayıf bir şifre seçtiniz! Lütfen değiştirin.' TYPE 'E'.
+  ENDIF.
+
+AT SELECTION-SCREEN ON p_kadi.
+  IF strlen( p_kadi ) < 3.
+    MESSAGE '⚠️ Kullanıcı adı en az 3 karakter olmalıdır.' TYPE 'E'.
+  ENDIF.
+
+* ----------------------------------------------------------------------
+* 2. AŞAMA: RAPOR ÇALIŞTIRMA (SADECE KONTROLLER GEÇİLİRSE ÇALIŞIR)
+* ----------------------------------------------------------------------
 START-OF-SELECTION.
-  
-
-  WRITE: '🔐 SİSTEM GİRİŞ VE GÜVENLİK KONTROLÜ'.
+  " Buraya gelindiyse, yukarıdaki kontrollerden başarıyla geçilmiş demektir.
+  WRITE: '🔐 SİSTEME GİRİŞ YAPILDI'.
   WRITE: / '--------------------------------------------------'.
+  WRITE: / |Hoş geldin, { p_kadi }!|.
+  WRITE: / 'Şu an güvenli bölgedesiniz.'.
 
 * ======================================================================
-* MANTIKSAL DOĞRULAMA (BUSINESS LOGIC VALIDATION)
-* Alanlar dolu olsa bile içerik "güvenli" veya "mantıklı" mı?
-* ======================================================================
-
-  " 1. BOŞ ALAN KONTROLÜ (Ekstra Güvenlik)
-  " IS INITIAL: Değişkenin tipine göre "boş" olup olmadığını kontrol eder.
-  IF p_kadi IS INITIAL.
-    WRITE: '🛑 SİSTEM HATASI: Kullanıcı adı tanımlanamadı!'.
-    EXIT. " Programın geri kalanını çalıştırmayı durdurur.
-  ENDIF.
-
-" 2. ŞİFRE GÜVENLİK ANALİZİ
-  " Kondisyonları netleştirmek için her birini ayrı ayrı veya parantez içinde kontrol edelim.
-  " Ayrıca CONDENSE veya ' ' temizliği gerekebilir ama en sağlıklısı şudur:
-  
-  IF p_sifre EQ '1234' OR 
-     p_sifre EQ '123456' OR 
-     p_sifre EQ 'admin'.
-     
-    WRITE: / '⚠️ GÜVENLİK UYARISI:'.
-    WRITE: / '--------------------------------------------------'.
-    WRITE: / |Girdiğiniz şifre ({ p_sifre }) çok zayıf!|.
-    WRITE: / 'Giriş işlemi güvenlik politikası gereği reddedildi.'.
-    EXIT.
-  ENDIF.
-
-  " 3. BAŞARILI GİRİŞ SENARYOSU
-  " Tüm kontrollerden geçtiyse (EXIT komutları çalışmadıysa) buraya ulaşılır.
-  WRITE: / |✅ Giriş Başarılı! Sisteme Hoş Geldin: { p_kadi }|.
-  WRITE: / 'Yetkileriniz kontrol ediliyor, lütfen bekleyiniz...'.
-
-* ======================================================================
-* PROFESYONEL İPUCU: 
-* Gerçek SAP sistemlerinde hata mesajlarını WRITE ile ekrana basmak yerine 
-* 'MESSAGE' komutu kullanılır. (Örn: MESSAGE 'Hatalı Giriş' TYPE 'E'.) 
-* 'E' (Error) tipi mesajlar programı durdurur ve alanı kırmızıya boyar.
+* NEDEN BU YÖNTEM?
+* 1. Program gereksiz yere START-OF-SELECTION'a girip yorulmaz.
+* 2. Kullanıcı hatasını anında görür ve düzeltme imkanı bulur.
+* 3. TYPE 'E' mesajı gerçek SAP standartıdır (Kırmızı hata kutusu).
 * ======================================================================`,
   },
   {
