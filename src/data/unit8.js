@@ -187,12 +187,17 @@ START-OF-SELECTION.
     EXIT. " Programın geri kalanını çalıştırmayı durdurur.
   ENDIF.
 
-  " 2. ŞİFRE GÜVENLİK ANALİZİ
-  " Basit şifreleri engelleyerek sistem güvenliğini koruyoruz.
-  IF p_sifre = '1234' OR p_sifre = 'admin' OR p_sifre = '123456'.
+" 2. ŞİFRE GÜVENLİK ANALİZİ
+  " Kondisyonları netleştirmek için her birini ayrı ayrı veya parantez içinde kontrol edelim.
+  " Ayrıca CONDENSE veya ' ' temizliği gerekebilir ama en sağlıklısı şudur:
+  
+  IF p_sifre EQ '1234' OR 
+     p_sifre EQ '123456' OR 
+     p_sifre EQ 'admin'.
+     
     WRITE: / '⚠️ GÜVENLİK UYARISI:'.
     WRITE: / '--------------------------------------------------'.
-    WRITE: / 'Girdiğiniz şifre çok zayıf (Tahmin edilebilir)!'.
+    WRITE: / |Girdiğiniz şifre ({ p_sifre }) çok zayıf!|.
     WRITE: / 'Giriş işlemi güvenlik politikası gereği reddedildi.'.
     EXIT.
   ENDIF.
