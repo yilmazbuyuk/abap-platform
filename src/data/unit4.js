@@ -343,7 +343,7 @@ ENDCLASS.
 * ======================================================================
 * 3. ANA PROGRAM (MİRASIN KANITI)
 * ======================================================================
-[Image of OOP Inheritance concept showing Parent and Child classes]
+
 START-OF-SELECTION.
   DATA: lo_marti TYPE REF TO lcl_kus.
 
