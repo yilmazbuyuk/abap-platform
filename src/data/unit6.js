@@ -252,7 +252,7 @@ START-OF-SELECTION.
 * ======================================================================
 * 2. HESAPLAMA MOTORU (ENGINE)
 * ======================================================================
-  [Image of SAP ABAP invoice aging logic flowchart]
+
   
   LOOP AT lt_faturalar ASSIGNING <ls_fatura>.
     
