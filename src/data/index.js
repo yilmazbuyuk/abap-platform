@@ -8,7 +8,6 @@ import { unit7 } from "./unit7";
 import { unit8 } from "./unit8";
 import { unit9 } from "./unit9";
 import { unit10 } from "./unit10";
-import { unit11 } from "./unit11"; // <--- Yeni
 
 export const curriculum = [
   { id: "unit-1", title: "Ünite 1: ABAP Temelleri", lessons: unit1 },
