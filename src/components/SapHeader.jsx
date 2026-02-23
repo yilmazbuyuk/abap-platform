@@ -23,7 +23,7 @@ const SapHeader = ({ title, tcode, onRun, isLoading }) => {
           userSelect: "none",
         }}
       >
-        SAP <span style={{ color: "#d35400" }}>Easy Access</span>
+        ABAP <span style={{ color: "#d35400" }}>Easy Access</span>
       </div>
 
       {/* T-Code Kutusu */}
@@ -70,7 +70,7 @@ const SapHeader = ({ title, tcode, onRun, isLoading }) => {
           opacity: isLoading ? 0.5 : 1,
         }}
       >
-        {isLoading ? "⏳" : "▶️"}
+        {isLoading ? "⏳" : "▶️ Çalıştır"}
       </button>
     </div>
   );
