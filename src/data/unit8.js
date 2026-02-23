@@ -2,132 +2,227 @@ export const unit8 = [
   {
     id: "u8-l1",
     tcode: "Z_PROFILE",
-    title: "1. Personel Kayıt Kartı (Temel Girişler)",
-    desc: "Farklı veri tiplerini (Metin, Sayı, Tarih) kullanarak giriş ekranı tasarlamak.",
-    code: `REPORT z_unit8_profile.
+    title: "1. Personel Kayıt Kartı (Selection Screen)",
+    desc: "Kullanıcıdan veri almak için PARAMETERS kullanımı ve giriş ekranı tasarımı.",
+    code: `REPORT z_ders_u8_1_profile.
 
-* --- GİRİŞ EKRANI (SELECTION SCREEN) ---
-* ABAP'ta kullanıcıdan veri almak için PARAMETERS kullanılır.
-* Değişken adları genelde 'p_' ile başlar.
+* ======================================================================
+* SELECTION SCREEN (SEÇİM EKRANI) NEDİR?
+* Kullanıcının programı çalıştırmadan önce filtreleme yapabildiği veya 
+* veri girişi yapabildiği ekrandır. ABAP'ta en temel giriş komutu 
+* PARAMETERS'tır. Bu komut, ekranda tek bir giriş alanı oluşturur.
+* ======================================================================
 
-PARAMETERS: p_ad    TYPE string,       " Ad Soyad
-            p_unvan TYPE string,       " Görevi
-            p_yas   TYPE i,            " Yaş (Tam Sayı)
-            p_giris TYPE d.            " İşe Giriş Tarihi
+" PARAMETERS: Kullanıcıdan tekil değerler almak için kullanılır.
+" İsimlendirme standardı olarak genelde 'p_' prefix'i tercih edilir.
+
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
+  PARAMETERS: p_ad    TYPE string,       " Metin girişi
+              p_unvan TYPE string,       " Metin girişi
+              p_yas   TYPE i,            " Tam sayı girişi
+              p_giris TYPE d DEFAULT sy-datum. " Tarih girişi (Varsayılan bugün)
+SELECTION-SCREEN END OF BLOCK b1.
 
 START-OF-SELECTION.
-  " Simülasyon: Kullanıcı verileri Pop-up'tan girdi ve F8'e bastı.
   
-  WRITE: / '--- PERSONEL BİLGİ KARTI ---'.
-  WRITE: /.
+
+* ======================================================================
+* PROGRAMIN ÇALIŞMA MANTIĞI
+* Kullanıcı girişleri yapıp F8 (Execute) tuşuna bastığında 
+* START-OF-SELECTION bloğu tetiklenir ve p_ ile başlayan değişkenler 
+* kullanıcının girdiği değerlerle dolar.
+* ======================================================================
+
+  WRITE: '📋 PERSONEL DETAYLI BİLGİ KARTI'.
+  WRITE: / '--------------------------------------------------'.
   
-  " 1. Basit Yazdırma
-  WRITE: / |Ad Soyad : { p_ad }|.
-  WRITE: / |Ünvan    : { p_unvan }|.
-  WRITE: / |Yaş      : { p_yas }|.
-  WRITE: / |Giriş Trh: { p_giris DATE = USER }|. " Kullanıcı formatında tarih
+  " Kullanıcı verilerini şık bir formatta ekrana basalım
+  WRITE: / |Personel Adı : { p_ad }|.
+  WRITE: / |Mevcut Ünvan : { p_unvan }|.
+  WRITE: / |Güncel Yaş   : { p_yas }|.
+  
+  " Tarihi kullanıcının kendi SAP ayarlarındaki formatta gösterelim
+  WRITE: / |İşe Giriş    : { p_giris DATE = USER }|.
 
   WRITE: /.
-  WRITE: '---------------------------------'.
+  WRITE: / '--- 🏖️ EMEKLİLİK ANALİZİ ---'.
+  WRITE: / '--------------------------------------------------'.
 
-  " 2. Mantıksal Kontrol
-  " Emekliliğe ne kadar kaldı? (Basit hesap: 65 - Yaş)
-  DATA: lv_kalan TYPE i.
+  " BASİT BİR HESAPLAMA MANTIĞI
+  " Emeklilik yaşı 65 kabul edilirse kalan süreyi hesaplayalım.
+  DATA: lv_kalan_yil TYPE i.
   
   IF p_yas > 0.
-    lv_kalan = 65 - p_yas.
-    IF lv_kalan > 0.
-       WRITE: / |Emekliliğe kalan süre: { lv_kalan } yıl.|.
+    lv_kalan_yil = 65 - p_yas.
+    
+    IF lv_kalan_yil > 0.
+       WRITE: / |Emekliliğe kalan tahmini süre: { lv_kalan_yil } yıl.|.
+       WRITE: / 'Çalışmaya devam! 💪'.
     ELSE.
-       WRITE: / 'Personel emeklilik hakkı kazanmıştır. 🏖️'.
+       WRITE: / '⚠️ Bu personel emeklilik yaş haddini doldurmuştur.'.
+       WRITE: / 'İşlemler başlatılabilir. 🏖️'.
     ENDIF.
-  ENDIF.`,
+  ELSE.
+    WRITE: / '❌ Geçersiz yaş girişi yapıldı.'.
+  ENDIF.
+
+* ======================================================================
+* İPUCU: Selection Screen'deki p_ad gibi teknik isimleri "Ad Soyad" gibi 
+* anlaşılır etiketlere çevirmek için SAP'de "Text Elements" kullanılır.
+* ======================================================================`,
   },
   {
     id: "u8-l2",
     tcode: "Z_CALC",
     title: "2. Hesap Makinesi (Radio Button & Logic)",
-    desc: "Kullanıcının seçimine göre (Topla/Çıkar) işlem yapan program.",
-    code: `REPORT z_unit8_calc.
+    desc: "Kullanıcı seçimlerine göre farklı algoritmalar çalıştırmak: Radio Button ve Case-Control mantığı.",
+    code: `REPORT z_ders_u8_2_hesap_makinesi.
 
-* --- GİRİŞ EKRANI ---
-PARAMETERS: p_sayi1 TYPE i,
-            p_sayi2 TYPE i.
+* ======================================================================
+* SELECTION SCREEN: RADIO BUTTON MANTIĞI
+* Radio Button'lar kullanıcıya birbirini dışlayan (Exclusive) seçenekler 
+* sunar. 'GROUP' eklentisi, hangi butonların birbirine bağlı olduğunu 
+* belirler. Aynı gruptaki butonlardan sadece BİRİ 'X' değerini alabilir.
+* ======================================================================
 
-* Kullanıcıya seçenek sunmak için RADIOBUTTON kullanılır.
-* Aynı grupta (grp1) olanlardan sadece biri seçilebilir.
-PARAMETERS: p_topla RADIOBUTTON GROUP grp1, " Toplama Modu
-            p_cikar RADIOBUTTON GROUP grp1, " Çıkarma Modu
-            p_carp  RADIOBUTTON GROUP grp1. " Çarpma Modu
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
+  PARAMETERS: p_sayi1 TYPE i,
+              p_sayi2 TYPE i.
+SELECTION-SCREEN END OF BLOCK b1.
 
-DATA: gv_sonuc TYPE i.
+SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-002.
+  " DEFAULT 'X': Program ilk açıldığında toplama butonunun seçili gelmesini sağlar.
+  PARAMETERS: p_topla RADIOBUTTON GROUP grp1 DEFAULT 'X',
+              p_cikar RADIOBUTTON GROUP grp1,
+              p_carp  RADIOBUTTON GROUP grp1,
+              p_bol   RADIOBUTTON GROUP grp1.
+SELECTION-SCREEN END OF BLOCK b2.
+
+DATA: gv_sonuc TYPE p DECIMALS 2.
 
 START-OF-SELECTION.
-  WRITE: '--- İŞLEM RAPORU ---'.
-  WRITE: /.
+  [Image of SAP ABAP Selection Screen Radio Button Group design]
 
-  " Hangi butonun seçildiğini kontrol edelim
-  " Seçilen butonun değeri 'X' olur.
+  WRITE: '🧮 ABAP AKILLI HESAP MAKİNESİ'.
+  WRITE: / '--------------------------------------------------'.
+
+* ======================================================================
+* İŞLEM KARAR MEKANİZMASI
+* Seçilen butonun değeri otomatik olarak 'X' (Abap_true) olur. 
+* IF/ELSEIF blokları ile hangi butonun aktif olduğunu kontrol ederiz.
+* ======================================================================
 
   IF p_topla = 'X'.
     gv_sonuc = p_sayi1 + p_sayi2.
-    WRITE: |İşlem: { p_sayi1 } + { p_sayi2 }|.
-    WRITE: / |SONUÇ: { gv_sonuc }|.
+    WRITE: / |İşlem Türü : Toplama (+)|.
+    WRITE: / |Matematik  : { p_sayi1 } + { p_sayi2 } = { gv_sonuc }|.
 
   ELSEIF p_cikar = 'X'.
     gv_sonuc = p_sayi1 - p_sayi2.
-    WRITE: |İşlem: { p_sayi1 } - { p_sayi2 }|.
-    WRITE: / |SONUÇ: { gv_sonuc }|.
+    WRITE: / |İşlem Türü : Çıkarma (-)|.
+    WRITE: / |Matematik  : { p_sayi1 } - { p_sayi2 } = { gv_sonuc }|.
 
   ELSEIF p_carp = 'X'.
     gv_sonuc = p_sayi1 * p_sayi2.
-    WRITE: |İşlem: { p_sayi1 } x { p_sayi2 }|.
-    WRITE: / |SONUÇ: { gv_sonuc }|.
+    WRITE: / |İşlem Türü : Çarpma (x)|.
+    WRITE: / |Matematik  : { p_sayi1 } * { p_sayi2 } = { gv_sonuc }|.
 
-  ENDIF.`,
+  ELSEIF p_bol = 'X'.
+    " Bölme işleminde sıfıra bölme hatasını kontrol edelim (Safe Coding)
+    IF p_sayi2 <> 0.
+      gv_sonuc = p_sayi1 / p_sayi2.
+      WRITE: / |İşlem Türü : Bölme (/)|.
+      WRITE: / |Matematik  : { p_sayi1 } / { p_sayi2 } = { gv_sonuc }|.
+    ELSE.
+      WRITE: / '🛑 HATA: Bir sayıyı sıfıra bölemezsiniz!'.
+    ENDIF.
+
+  ENDIF.
+
+  WRITE: / '--------------------------------------------------'.
+  WRITE: / '✅ İşlem başarıyla tamamlandı.'.
+
+* ======================================================================
+* ÖNEMLİ NOT: Daha temiz bir kod için IF yerine 'CASE' yapısı da 
+* kullanılabilir (CASE 'X'. WHEN p_topla. ... ENDCASE.). 
+* Ancak yeni başlayanlar için IF yapısı akışı daha net gösterir.
+* ======================================================================`,
   },
   {
     id: "u8-l3",
     tcode: "Z_VALIDATE",
     title: "3. Zorunlu Alan ve Kontrol (Validation)",
-    desc: "Kullanıcı veriyi eksik veya hatalı girerse ne olur?",
-    code: `REPORT z_unit8_validate.
+    desc: "Kullanıcı veriyi eksik veya hatalı girerse ne olur? OBLIGATORY kullanımı ve manuel kontrol mekanizmaları.",
+    code: `REPORT z_ders_u8_3_validation.
 
-* --- GİRİŞ EKRANI ---
-* OBLIGATORY: Zorunlu alan demektir (Simülasyonda kodla kontrol edeceğiz).
-PARAMETERS: p_kadi  TYPE string, " Kullanıcı Adı
-            p_sifre TYPE string. " Şifre
+* ======================================================================
+* VALIDATION (DOĞRULAMA) NEDİR?
+* Kullanıcının girdiği verilerin "beklenen" kurallara uyup uymadığını 
+* kontrol etme işlemidir. İki aşamalı yapılır:
+* 1. Teknik Kontrol: OBLIGATORY ile alanın boş geçilmesini engellemek.
+* 2. Mantıksal Kontrol: IF blokları ile verinin içeriğini denetlemek.
+* ======================================================================
+
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
+  " OBLIGATORY: Bu parametre dolmadan kullanıcı F8'e basarsa 
+  " SAP otomatik olarak "Fill in all required entry fields" uyarısı verir.
+  PARAMETERS: p_kadi  TYPE string OBLIGATORY,
+              p_sifre TYPE string OBLIGATORY.
+SELECTION-SCREEN END OF BLOCK b1.
 
 START-OF-SELECTION.
   
-  " 1. BOŞ ALAN KONTROLÜ (Validation)
-  " Kullanıcı adını boş geçerse programı durdur.
+
+  WRITE: '🔐 SİSTEM GİRİŞ VE GÜVENLİK KONTROLÜ'.
+  WRITE: / '--------------------------------------------------'.
+
+* ======================================================================
+* MANTIKSAL DOĞRULAMA (BUSINESS LOGIC VALIDATION)
+* Alanlar dolu olsa bile içerik "güvenli" veya "mantıklı" mı?
+* ======================================================================
+
+  " 1. BOŞ ALAN KONTROLÜ (Ekstra Güvenlik)
+  " IS INITIAL: Değişkenin tipine göre "boş" olup olmadığını kontrol eder.
   IF p_kadi IS INITIAL.
-    WRITE: '🛑 HATA: Kullanıcı adı boş olamaz!'.
-    WRITE: / 'Lütfen geri dönüp alanı doldurunuz.'.
-    EXIT. " Programı burada keser, aşağıya inmez.
+    WRITE: '🛑 SİSTEM HATASI: Kullanıcı adı tanımlanamadı!'.
+    EXIT. " Programın geri kalanını çalıştırmayı durdurur.
   ENDIF.
 
-  " 2. ŞİFRE GÜVENLİK KONTROLÜ
-  " Şifre '1234' ise kabul etme.
-  IF p_sifre = '1234' OR p_sifre = 'admin'.
-    WRITE: '⚠️ GÜVENLİK UYARISI:'.
-    WRITE: / 'Bu şifre çok basit! Giriş reddedildi.'.
+  " 2. ŞİFRE GÜVENLİK ANALİZİ
+  " Basit şifreleri engelleyerek sistem güvenliğini koruyoruz.
+  IF p_sifre = '1234' OR p_sifre = 'admin' OR p_sifre = '123456'.
+    WRITE: / '⚠️ GÜVENLİK UYARISI:'.
+    WRITE: / '--------------------------------------------------'.
+    WRITE: / 'Girdiğiniz şifre çok zayıf (Tahmin edilebilir)!'.
+    WRITE: / 'Giriş işlemi güvenlik politikası gereği reddedildi.'.
     EXIT.
   ENDIF.
 
-  " 3. BAŞARILI GİRİŞ
-  WRITE: |Giriş Başarılı! Hoşgeldin, { p_kadi }.|.
-  WRITE: / 'Sisteme yönlendiriliyorsunuz...'.`,
+  " 3. BAŞARILI GİRİŞ SENARYOSU
+  " Tüm kontrollerden geçtiyse (EXIT komutları çalışmadıysa) buraya ulaşılır.
+  WRITE: / |✅ Giriş Başarılı! Sisteme Hoş Geldin: { p_kadi }|.
+  WRITE: / 'Yetkileriniz kontrol ediliyor, lütfen bekleyiniz...'.
+
+* ======================================================================
+* PROFESYONEL İPUCU: 
+* Gerçek SAP sistemlerinde hata mesajlarını WRITE ile ekrana basmak yerine 
+* 'MESSAGE' komutu kullanılır. (Örn: MESSAGE 'Hatalı Giriş' TYPE 'E'.) 
+* 'E' (Error) tipi mesajlar programı durdurur ve alanı kırmızıya boyar.
+* ======================================================================`,
   },
   {
     id: "u8-l4",
     tcode: "Z_SALES_REP",
     title: "4. Proje: Satış Filtreleme Raporu",
-    desc: "Belirli bir tutarın üzerindeki satışları ve belirli kategoriyi filtreleme.",
-    code: `REPORT z_unit8_project.
+    desc: "Kullanıcı parametrelerine göre veriyi ayıklayan, opsiyonel filtreleme ve tutar kontrolü yapan kapsamlı rapor projesi.",
+    code: `REPORT z_ders_u8_project_sales.
 
-* --- VERİ YAPISI ---
+* ======================================================================
+* PROJE: SATIŞ ANALİZ VE FİLTRELEME MOTORU
+* Senaryo: Veritabanından (simüle edilen) gelen binlerce satış verisini, 
+* kullanıcının istediği kategoriye ve bütçeye göre süzerek raporlamak.
+* ======================================================================
+
 TYPES: BEGIN OF ty_satis,
          belge_no TYPE string,
          musteri  TYPE string,
@@ -140,47 +235,68 @@ DATA: lt_satislar TYPE TABLE OF ty_satis,
       lt_rapor    TYPE TABLE OF ty_satis,
       ls_satis    TYPE ty_satis.
 
-* --- GİRİŞ EKRANI (FİLTRELER) ---
-* Kullanıcı raporu nasıl kısıtlamak istiyor?
-PARAMETERS: p_kat TYPE string,  " Hangi Kategori? (Örn: GIDA, TEKNOLOJI)
-            p_min TYPE i.       " Minimum Tutar ne olsun?
+* ======================================================================
+* GİRİŞ EKRANI (SELECTION SCREEN)
+* ======================================================================
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
+  " p_kat boş bırakılırsa tüm kategoriler listelenir (Opsiyonel Filtre).
+  PARAMETERS: p_kat TYPE string LOWER CASE, 
+              p_min TYPE i DEFAULT 0.      " Varsayılan min tutar 0 TL.
+SELECTION-SCREEN END OF BLOCK b1.
 
 START-OF-SELECTION.
-  " 1. VERİ HAZIRLIĞI (Mock Data)
-  ls_satis-belge_no = 'DOC100'. ls_satis-musteri = 'Migros'. ls_satis-kategori = 'GIDA'.      ls_satis-tutar = 5000.  ls_satis-para_bir = 'TRY'. APPEND ls_satis TO lt_satislar.
-  ls_satis-belge_no = 'DOC101'. ls_satis-musteri = 'Bimeks'. ls_satis-kategori = 'TEKNOLOJI'. ls_satis-tutar = 15000. ls_satis-para_bir = 'TRY'. APPEND ls_satis TO lt_satislar.
-  ls_satis-belge_no = 'DOC102'. ls_satis-musteri = 'Şok'.    ls_satis-kategori = 'GIDA'.      ls_satis-tutar = 2000.  ls_satis-para_bir = 'TRY'. APPEND ls_satis TO lt_satislar.
-  ls_satis-belge_no = 'DOC103'. ls_satis-musteri = 'Vatan'.  ls_satis-kategori = 'TEKNOLOJI'. ls_satis-tutar = 45000. ls_satis-para_bir = 'TRY'. APPEND ls_satis TO lt_satislar.
-  ls_satis-belge_no = 'DOC104'. ls_satis-musteri = 'LCW'.    ls_satis-kategori = 'GIYIM'.     ls_satis-tutar = 8000.  ls_satis-para_bir = 'TRY'. APPEND ls_satis TO lt_satislar.
+ 
 
-  " Bilgilendirme
-  WRITE: |🔍 FİLTRE: Kategori = { p_kat }, Min Tutar = { p_min } TL|.
-  WRITE: /.
+* ======================================================================
+* 1. VERİ HAZIRLIĞI (MOCK DATA)
+* ======================================================================
+  APPEND VALUE #( belge_no = 'DOC100' musteri = 'Migros' kategori = 'GIDA'      tutar = 5000  para_bir = 'TRY' ) TO lt_satislar.
+  APPEND VALUE #( belge_no = 'DOC101' musteri = 'Bimeks' kategori = 'TEKNOLOJI' tutar = 15000 para_bir = 'TRY' ) TO lt_satislar.
+  APPEND VALUE #( belge_no = 'DOC102' musteri = 'Şok'    kategori = 'GIDA'      tutar = 2000  para_bir = 'TRY' ) TO lt_satislar.
+  APPEND VALUE #( belge_no = 'DOC103' musteri = 'Vatan'  kategori = 'TEKNOLOJI' tutar = 45000 para_bir = 'TRY' ) TO lt_satislar.
+  APPEND VALUE #( belge_no = 'DOC104' musteri = 'LCW'    kategori = 'GIYIM'     tutar = 8000  para_bir = 'TRY' ) TO lt_satislar.
 
-  " 2. FİLTRELEME MOTORU
+  WRITE: '🔍 RAPOR PARAMETRELERİ'.
+  WRITE: / '--------------------------------------------------'.
+  WRITE: / |Seçilen Kategori : { p_kat } (Boşsa Tümü)|.
+  WRITE: / |Minimum Tutar    : { p_min } TL|.
+  WRITE: / '--------------------------------------------------'.
+
+* ======================================================================
+* 2. FİLTRELEME MOTORU (FILTERING ENGINE)
+* Mantık: CONTINUE komutu, kurala uymayan satırı anında geçer ve döngünün 
+* başına döner. Bu sayede sadece "temiz" veriler APPEND satırına ulaşır.
+* ======================================================================
   LOOP AT lt_satislar INTO ls_satis.
     
-    " Kural 1: Kategori Filtresi (Eğer kullanıcı boş bıraktıysa hepsini getir)
+    " KURAL 1: Kategori Filtresi
+    " Eğer kullanıcı kategori girdiyse VE tablodaki kategori buna uymuyorsa geç.
     IF p_kat IS NOT INITIAL AND ls_satis-kategori <> p_kat.
-      CONTINUE. " Kategori uymuyorsa pas geç
+      CONTINUE.
     ENDIF.
 
-    " Kural 2: Minimum Tutar Kontrolü
+    " KURAL 2: Minimum Tutar Kontrolü
+    " Satış tutarı, istenen değerin altındaysa bu satırı rapora alma.
     IF ls_satis-tutar < p_min.
-      CONTINUE. " Tutar, istenen minimumdan azsa pas geç
+      CONTINUE.
     ENDIF.
 
-    " Kuralları geçtiyse rapora ekle
+    " Tüm kuralları başarıyla geçen satır rapor listesine eklenir.
     APPEND ls_satis TO lt_rapor.
 
   ENDLOOP.
 
-  " 3. SONUÇ GÖSTERİMİ
+* ======================================================================
+* 3. ÇIKTI YÖNETİMİ
+* ======================================================================
   IF lt_rapor IS INITIAL.
-     WRITE: 'Aradığınız kriterlere uygun kayıt bulunamadı.'.
+    WRITE: / '🛑 UYARI: Aradığınız kriterlere uygun satış kaydı bulunamadı.'.
   ELSE.
-     WRITE: 'Rapor hazırlandı. Tabloyu görmek için ALV sekmesine geçiniz.'.
-     cl_demo_output=>display( lt_rapor ).
+    WRITE: / |✅ İşlem Başarılı: { lines( lt_rapor ) } adet kayıt filtrelendi.|.
+    WRITE: / 'Detaylar için ALV Grid ekranını inceleyiniz.'.
+    
+    " Filtrelenmiş listeyi modern formatta gösterelim.
+    cl_demo_output=>display( lt_rapor ).
   ENDIF.`,
   },
 ];
