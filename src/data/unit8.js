@@ -148,66 +148,9 @@ START-OF-SELECTION.
 * ======================================================================`,
   },
   {
-    id: "u8-l3",
-    tcode: "Z_VALIDATE",
-    title: "3. Profesyonel Giriş Kontrolü (Smart Validation)",
-    desc: "Kullanıcı verilerini rapor başlamadan süzmek: 'Check & Stop' algoritmasıyla hatalı girişi engelleme.",
-    code: `REPORT z_ders_u8_3_validation_fixed.
-
-* ======================================================================
-* PROFESYONEL VALIDATION (DOĞRULAMA) STRATEJİSİ
-* ABAP'ta en güvenli doğrulama yöntemi, START-OF-SELECTION bloğunun 
-* en başında tüm kontrolleri yapıp, hata varsa EXIT ile sistemi 
-* kilitlemektir. Böylece parser hatalarından kaçınırız.
-* ======================================================================
-
-SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
-  " LOWER CASE: Küçük harf duyarlılığını korur (admin vs ADMIN).
-  PARAMETERS: p_kadi  TYPE string OBLIGATORY LOWER CASE,
-              p_sifre TYPE string OBLIGATORY LOWER CASE.
-SELECTION-SCREEN END OF BLOCK b1.
-
-START-OF-SELECTION.
-  " 1. ADIM: GÜVENLİK DUVARI (THE WALL)
-  " Rapor çalışmadan önce tüm kontrolleri burada yapıyoruz.
-  
-
-  DATA: lv_hata_mesaji TYPE string.
-
-  " --- Şifre Kontrolü ---
-  IF p_sifre = '1234' OR p_sifre = '123456' OR p_sifre = 'admin'.
-    lv_hata_mesaji = '🛑 GÜVENLİK: Çok zayıf bir şifre girdiniz!'.
-  ENDIF.
-
-  " --- Kullanıcı Adı Uzunluk Kontrolü ---
-  IF strlen( p_kadi ) < 3.
-    lv_hata_mesaji = '⚠️ HATA: Kullanıcı adı en az 3 karakter olmalıdır.'.
-  ENDIF.
-
-  " --- SONUÇ: HATA VAR MI? ---
-  IF lv_hata_mesaji IS NOT INITIAL.
-    WRITE: / '--------------------------------------------------'.
-    WRITE: / lv_hata_mesaji.
-    WRITE: / 'Sistem güvenliği için işlem durduruldu.'.
-    WRITE: / '--------------------------------------------------'.
-    EXIT. " 🔥 KRİTİK: Hata varsa programın aşağıya inmesini ENGELLER.
-  ENDIF.
-
-* ======================================================================
-* 2. ADIM: ASIL RAPOR (SADECE KONTROLLER GEÇİLİRSE ÇALIŞIR)
-* ======================================================================
-  WRITE: '🔐 SİSTEME GİRİŞ BAŞARILI'.
-  WRITE: / '--------------------------------------------------'.
-  WRITE: / |Hoş geldin, { p_kadi }!|.
-  WRITE: / 'Tüm güvenlik kontrollerinden başarıyla geçtiniz.'.
-  WRITE: / 'Yetki seviyeniz: Admin'.
-
-`,
-  },
-  {
     id: "u8-l4",
     tcode: "Z_SALES_REP",
-    title: "4. Proje: Satış Filtreleme Raporu",
+    title: "3. Proje: Satış Filtreleme Raporu",
     desc: "Kullanıcı parametrelerine göre veriyi ayıklayan, opsiyonel filtreleme ve tutar kontrolü yapan kapsamlı rapor projesi.",
     code: `REPORT z_ders_u8_project_sales.
 
