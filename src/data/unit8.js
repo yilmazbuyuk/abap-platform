@@ -101,8 +101,7 @@ SELECTION-SCREEN END OF BLOCK b2.
 DATA: gv_sonuc TYPE p DECIMALS 2.
 
 START-OF-SELECTION.
-  [Image of SAP ABAP Selection Screen Radio Button Group design]
-
+  
   WRITE: '🧮 ABAP AKILLI HESAP MAKİNESİ'.
   WRITE: / '--------------------------------------------------'.
 
