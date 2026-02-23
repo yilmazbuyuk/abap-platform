@@ -8,7 +8,9 @@ export const unit1 = [
 
 START-OF-SELECTION.
   WRITE 'Merhaba SAP Dünyası!'.
-  WRITE / 'Bu benim ilk raporum.'.`,
+  WRITE / 'Bu benim ilk raporum.'.
+  WRITE / 'Hazırlayan: Yılmaz Büyük'.
+  WRITE / 'https://www.linkedin.com/in/yilmazbuyuk/'.`,
   },
   {
     id: "u1-l2",
