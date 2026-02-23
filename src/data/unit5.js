@@ -103,9 +103,6 @@ START-OF-SELECTION.
 
 * ======================================================================
 * 3. MANUEL ÖZETLEME (KONSOLİDASYON) ALGORİTMASI
-* Mantık: Ham veriyi satır satır dön. Özet tablosuna bak; eğer o bölge 
-* daha önce eklendiyse (Bulunduysa) tutarın ÜZERİNE EKLE (MODIFY). 
-* Eğer yoksa (İlk defa görüyorsan) YENİ SATIR olarak ekle (APPEND).
 * ======================================================================
   
   LOOP AT lt_ham_veri INTO ls_veri.
@@ -117,16 +114,14 @@ START-OF-SELECTION.
     READ TABLE lt_ozet INTO ls_ozet WITH KEY bolge = ls_veri-bolge.
 
     IF sy-subrc = 0.
-      " SENARYO A: Zaten var! (Daha önce eklemişiz)
-      " Eski tutarın üzerine yeni gelen tutarı ekliyoruz (Örn: 100 + 200)
+      " SENARYO A: Zaten var! Tutarı üzerine ekle.
       ls_ozet-tutar = ls_ozet-tutar + ls_veri-tutar.
       
       " Değişikliği özet tablosundaki AYNI SIRAYA (sy-tabix) geri koyuyoruz.
       MODIFY lt_ozet FROM ls_ozet INDEX sy-tabix.
     
     ELSE.
-      " SENARYO B: İlk defa geldi! (Özet tablosunda bu bölge yok)
-      " Sıfırdan bir kayıt oluşturup özet tablosunun en altına ekliyoruz.
+      " SENARYO B: İlk defa geldi! Yeni satır olarak ekle.
       ls_ozet-bolge = ls_veri-bolge.
       ls_ozet-tutar = ls_veri-tutar.
       
@@ -136,13 +131,14 @@ START-OF-SELECTION.
   ENDLOOP.
 
 * ======================================================================
-* 4. SONUÇ TABLOSUNU EKRANA BASMA
+* 4. SONUÇ TABLOSUNU EKRANA BASMA (Düzeltildi)
 * ======================================================================
   WRITE: / '✅ Hesaplama Tamamlandı. Sonuç Tablosu:'.
   WRITE: / '--------------------------------------------------'.
   
   LOOP AT lt_ozet INTO ls_ozet.
-    WRITE: / |Bölge: { ls_ozet-bolge } | Toplam Satış: { ls_ozet-tutar } TL|.
+    " Hata Veren | karakteri yerine - (tire) kullanıldı.
+    WRITE: / |Bölge: { ls_ozet-bolge } - Toplam Satış: { ls_ozet-tutar } TL|.
   ENDLOOP.`,
   },
   {
@@ -182,32 +178,27 @@ START-OF-SELECTION.
 
 * ======================================================================
 * 2. YENİ NESİL GÜNCELLEME (HIZLI YÖNTEM)
-* "INTO" yerine "ASSIGNING" kullanıyoruz. Bu şu demek:
-* "Her satırı kopyalayıp getirme, <fs_urun> sembolünü o satıra bağla!"
 * ======================================================================
-  
   
   LOOP AT lt_urunler ASSIGNING <fs_urun>.
     
     " Senaryo: Ürünlere %10 Zam Yapalım.
     " DİKKAT: Burada <fs_urun> doğrudan tablonun içindeki o satıra bakıyor.
-    " Bu satırı değiştirdiğimizde tablodaki veri de ANINDA değişir.
-    
     <fs_urun>-fiyat = <fs_urun>-fiyat * 110 / 100.
     
-    " MÜTHİŞ BİLGİ: Normalde kullandığımız 'MODIFY lt_urunler FROM ...' 
-    " komutuna burada ihtiyacımız YOK! Çünkü biz kopyayı değil, asıl veriyi güncelledik.
+    " MODIFY komutuna gerek YOK! Çünkü biz kopyayı değil, asıl veriyi güncelledik.
     
   ENDLOOP.
 
 * ======================================================================
-* 3. SONUCU KONTROL ETME
+* 3. SONUCU KONTROL ETME (Düzeltildi)
 * ======================================================================
   WRITE: / '✅ Zamlı Fiyatlar (Hafıza Üzerinden Güncellendi):'.
   WRITE: / '--------------------------------------------------'.
   
   LOOP AT lt_urunler INTO ls_urun.
-    WRITE: / |Ürün: { ls_urun-ad WIDTH = 10 } | Yeni Fiyat: { ls_urun-fiyat } TL|.
+    " Hata veren | karakteri yerine : kullanıldı.
+    WRITE: / |Ürün: { ls_urun-ad WIDTH = 10 } : Yeni Fiyat: { ls_urun-fiyat } TL|.
   ENDLOOP.
 
   WRITE: /.
@@ -223,11 +214,6 @@ START-OF-SELECTION.
 START-OF-SELECTION.
 * ======================================================================
 * 1. HATA YÖNETİMİ (EXCEPTION HANDLING) NEDİR?
-* Yazdığımız kodlar bazen mantıklı olsa da çalışma anında (Runtime) 
-* beklenmedik hatalar verebilir. Örneğin; bir sayıyı 0'a bölmek, 
-* olmayan bir dosyayı açmaya çalışmak veya yanlış formatta bir veri okumak.
-* Bu durumlarda SAP sistemi programı tamamen durdurur (Dump). 
-* TRY-CATCH, bu çöküşü engelleyip kullanıcıya düzgün bir mesaj vermemizi sağlar.
 * ======================================================================
   DATA: lv_sayi1 TYPE i VALUE 100,
         lv_sayi2 TYPE i VALUE 0,   " Tehlike! Sıfıra bölme hatası.
@@ -235,19 +221,18 @@ START-OF-SELECTION.
 
   WRITE: '🛠️ ABAP HATA YÖNETİMİ (TRY-CATCH) REHBERİ'.
   WRITE: / '--------------------------------------------------'.
+  " Hata düzeltildi: | yerine - kullanıldı
   WRITE: / |İşlem: { lv_sayi1 } / { lv_sayi2 } denemesi yapılıyor...|.
 
 * ======================================================================
 * 2. TRY-CATCH BLOĞU
-* TRY   : "Hata çıkma ihtimali olan riskli bölge"
-* CATCH : "Eğer hata çıkarsa ne yapayım?"
-* ENDTRY: "Hata yönetimini bitir, normal akışa devam et."
 * ======================================================================
- 
+  
   
   TRY.
       " Riskli kod buraya yazılır.
       lv_sonuc = lv_sayi1 / lv_sayi2.
+      " Hata düzeltildi: | yerine : kullanıldı
       WRITE: / |İşlem Başarılı! Sonuç: { lv_sonuc }|.
 
     CATCH cx_sy_zerodivide.
@@ -263,8 +248,6 @@ START-OF-SELECTION.
 
 * ======================================================================
 * 3. PROGRAMIN DEVAMLILIĞI
-* Eğer TRY-CATCH kullanmasaydık, program yukarıdaki bölme satırında 
-* patlayacak ve aşağıdaki mesaj asla yazılmayacaktı.
 * ======================================================================
   WRITE: /.
   WRITE: / '--------------------------------------------------'.
