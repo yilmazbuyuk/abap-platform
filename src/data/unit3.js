@@ -181,7 +181,7 @@ START-OF-SELECTION.
 * Harita:  2  0  2  3  1  0  2  5
 * İndeks:  0  1  2  3  4  5  6  7
 * ======================================================================
-  [Image of ABAP string offset and length indexing]
+
   WRITE: /.
   WRITE: / '--- OFFSET İLE TARİHİ PARÇALAMA ---'.
 
@@ -289,7 +289,7 @@ START-OF-SELECTION.
 * tıpkı diğer modern dillerdeki gibi fonksiyonlarla tek satırda yapılabilir:
 * * lv_isim = to_upper( condense( val = lv_kirli ) ).
 * ======================================================================
-  [Image of ABAP CONDENSE and TRANSLATE string functions]`,
+ `,
   },
   {
     id: "u3-l5",
@@ -314,7 +314,7 @@ START-OF-SELECTION.
   WRITE: /.
 
   " Metnin içinde 'HATA' kelimesi geçiyor mu?
-  [Image of ABAP FIND and REPLACE string operations]
+
   FIND 'HATA' IN lv_log_mesaji.
   
   IF sy-subrc = 0.
@@ -388,7 +388,7 @@ START-OF-SELECTION.
 * FLOOR (Zemin) : Sayıyı her zaman kendinden KÜÇÜK en yakın tam sayıya çeker.
 * CEIL  (Tavan) : Sayıyı her zaman kendinden BÜYÜK en yakın tam sayıya çeker.
 * ======================================================================
-  [Image of mathematical rounding functions FLOOR and CEIL in programming]
+
   WRITE: /.
   WRITE: / '--- 2. YUVARLAMA (FLOOR & CEIL) ---'.
 
