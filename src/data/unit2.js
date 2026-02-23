@@ -294,7 +294,9 @@ START-OF-SELECTION.
   WRITE: '📦 ORİJİNAL STOK LİSTESİ'.
   WRITE: / '--------------------------------------------------'.
   LOOP AT lt_stok INTO ls_urun.
-    WRITE: / |ID: { ls_urun-id } | Ürün: { ls_urun-ad } | Fiyat: { ls_urun-fiyat } TL|.
+    " HATA DÜZELTİLDİ: ABAP'ta | işareti metin başlatıp bitirdiği için, 
+    " aralarda ayırıcı olarak tire (-) kullandık.
+    WRITE: / |ID: { ls_urun-id } - Ürün: { ls_urun-ad } - Fiyat: { ls_urun-fiyat } TL|.
   ENDLOOP.
 
 * ======================================================================
@@ -338,7 +340,8 @@ START-OF-SELECTION.
   WRITE: / '📦 GÜNCEL STOK LİSTESİ (Son Durum)'.
   WRITE: / '--------------------------------------------------'.
   LOOP AT lt_stok INTO ls_urun.
-    WRITE: / |ID: { ls_urun-id } | Ürün: { ls_urun-ad } | Fiyat: { ls_urun-fiyat } TL|.
+    " HATA DÜZELTİLDİ: Aralardaki | işaretleri - yapıldı.
+    WRITE: / |ID: { ls_urun-id } - Ürün: { ls_urun-ad } - Fiyat: { ls_urun-fiyat } TL|.
   ENDLOOP.`,
   },
 
