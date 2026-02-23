@@ -32,14 +32,10 @@ export const curriculum = [
   },
   { id: "unit-8", title: "Ünite 8: Kullanıcı Girişleri", lessons: unit8 },
   { id: "unit-9", title: "Ünite 9: Veri Manipülasyonu (CRUD)", lessons: unit9 },
+
   {
     id: "unit-10",
-    title: "Ünite 10: Debugging & Troubleshooting",
+    title: "🎓 Ünite 10: Mezuniyet Projesi (Mini ERP)", // <--- Yeni
     lessons: unit10,
-  },
-  {
-    id: "unit-11",
-    title: "🎓 Ünite 11: Mezuniyet Projesi (Mini ERP)", // <--- Yeni
-    lessons: unit11,
   },
 ];

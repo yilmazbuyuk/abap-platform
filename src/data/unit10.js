@@ -1,177 +1,170 @@
 export const unit10 = [
   {
-    id: "u10-l1",
-    tcode: "Z_DEBUG_LOG",
-    title: "1. Debugging Mantığı (Loglama)",
-    desc: "Kod akarken değişkenlerin değerini anlık takip etmek.",
-    code: `REPORT z_unit10_debug.
+    id: "u10-final",
+    tcode: "Z_MINI_ERP",
+    title: "🎓 MEZUNİYET PROJESİ: Mini ERP Sistemi",
+    desc: "Müşteri, Stok ve Satış verilerini yöneten, analiz eden ve raporlayan devasa bir sistem.",
+    code: `REPORT z_unit10_minierp.
 
-DATA: lv_sayac TYPE i,
-      lv_toplam TYPE i.
+* ======================================================================
+* 🎓 BÜYÜK FİNAL: MINI ERP SİSTEMİ
+* Amaç: Öğrenilen tüm teknikleri (Tables, OOP, ALV, Input, Logic) birleştirmek.
+* ======================================================================
 
-START-OF-SELECTION.
-  lv_sayac = 0.
-  lv_toplam = 0.
-
-  WRITE: '--- Döngü Başlıyor ---'.
-
-  " Senaryo: Toplama işlemi yapıyoruz ama sonuç yanlış çıkıyor diyelim.
-  " Hatayı bulmak için her adımda değişkenleri ekrana basacağız (Loglama).
-
-  DO 5 TIMES.
-    lv_sayac = lv_sayac + 1.
-    
-    " HATA SİMÜLASYONU: Sayaç 3 olduğunda yanlışlıkla 10 ekleyelim
-    IF lv_sayac = 3.
-       lv_toplam = lv_toplam + 10. 
-    ELSE.
-       lv_toplam = lv_toplam + lv_sayac.
-    ENDIF.
-
-    " --- DEBUG LOG ---
-    " Gerçek sistemde buraya Breakpoint konur.
-    " Biz burada değerleri yazdırarak iz sürüyoruz.
-    WRITE: / |🛑 DEBUG: Tur={ sy-index }, Sayaç={ lv_sayac }, Toplam={ lv_toplam }|.
-    
-  ENDDO.
-
-  WRITE: /.
-  WRITE: '--- Döngü Bitti ---'.
-  WRITE: / |🏁 FİNAL SONUÇ: { lv_toplam }|.
-  WRITE: / '(Beklenen sonuç 1+2+3+4+5 = 15 idi. Loglara bakarak hatayı bul!)'.`,
-  },
-  {
-    id: "u10-l2",
-    tcode: "Z_SUBRC",
-    title: "2. Hata Kodu Analizi (SY-SUBRC)",
-    desc: "ABAP'ın en önemli değişkeni: İşlem başarılı mı, başarısız mı?",
-    code: `REPORT z_unit10_subrc.
-
-TYPES: BEGIN OF ty_malzeme,
-         matnr TYPE string,
-         maktx TYPE string,
-       END OF ty_malzeme.
-
-DATA: lt_malzeme TYPE TABLE OF ty_malzeme,
-      ls_malzeme TYPE ty_malzeme.
-
-START-OF-SELECTION.
-  " Mock Data
-  ls_malzeme-matnr = '100'. ls_malzeme-maktx = 'Demir'. APPEND ls_malzeme TO lt_malzeme.
-  ls_malzeme-matnr = '200'. ls_malzeme-maktx = 'Bakır'. APPEND ls_malzeme TO lt_malzeme.
-
-  " 1. BAŞARILI OKUMA (SUBRC = 0)
-  READ TABLE lt_malzeme INTO ls_malzeme WITH KEY matnr = '100'.
-  
-  WRITE: |Okuma 1 (Kod 100) -> SY-SUBRC: { sy-subrc }|.
-  
-  IF sy-subrc = 0.
-    WRITE: ' (✅ Başarılı)'.
-  ELSE.
-    WRITE: ' (❌ Başarısız)'.
-  ENDIF.
-
-  WRITE: /.
-
-  " 2. BAŞARISIZ OKUMA (SUBRC = 4 veya 8)
-  READ TABLE lt_malzeme INTO ls_malzeme WITH KEY matnr = '999'.
-  
-  WRITE: |Okuma 2 (Kod 999) -> SY-SUBRC: { sy-subrc }|.
-  
-  IF sy-subrc <> 0.
-    WRITE: ' (⚠️ Kayıt Bulunamadı - Kod 4)'.
-  ENDIF.
-
-  " NEDEN ÖNEMLİ?
-  " Eğer subrc kontrolü yapmazsan, eski veriyi işlemeye devam edersin!
-  " Örneğin burada ls_malzeme içinde hala 'Demir' var.
-  WRITE: /.
-  WRITE: |Dikkat: Son okuma hatalıydı ama değişken değeri: { ls_malzeme-maktx }|.
-  WRITE: '(Bu yüzden her READ işleminden sonra IF sy-subrc = 0 kontrolü ŞARTTIR!)'.`,
-  },
-  {
-    id: "u10-l3",
-    tcode: "Z_MESSAGES",
-    title: "3. Mesaj Tipleri (MESSAGE)",
-    desc: "Kullanıcıya Error (E), Success (S) ve Info (I) mesajı vermek.",
-    code: `REPORT z_unit10_messages.
-
-PARAMETERS: p_not TYPE i.
-
-START-OF-SELECTION.
-  " Simülasyonda MESSAGE komutu çalışmaz (Pop-up açmaz).
-  " Ancak biz bunu simüle edeceğiz.
-  
-  WRITE: |Girilen Not: { p_not }|.
-  WRITE: /.
-
-  IF p_not < 0 OR p_not > 100.
-    " TYPE 'E' (Error): Programı durdurur, kırmızı mesaj verir.
-    WRITE: '🛑 MESSAGE TYPE E: Geçersiz not girişi! (İşlem Durduruldu)'.
-    EXIT. " Programdan çık
-  ENDIF.
-
-  IF p_not < 50.
-    " TYPE 'I' (Info): Bilgi verir, işlem devam eder.
-    WRITE: 'ℹ️ MESSAGE TYPE I: Dersten kaldınız ama bütünlemeye girebilirsiniz.'.
-  ELSE.
-    " TYPE 'S' (Success): Yeşil mesaj verir, işlem başarılı.
-    WRITE: '✅ MESSAGE TYPE S: Tebrikler, geçtiniz!'.
-  ENDIF.
-
-  WRITE: /.
-  WRITE: 'Program sonuna ulaşıldı (Eğer hata olsaydı burayı göremezdin).'.`,
-  },
-  {
-    id: "u10-l4",
-    tcode: "Z_BUG_FIX",
-    title: "4. Proje: Bozuk Raporu Tamir Et",
-    desc: "Bu kod hatalı çalışıyor! Logları inceleyerek hatayı bul.",
-    code: `REPORT z_unit10_bugfix.
-
-* --- SENARYO ---
-* Bir mağaza, müşterilerine puan veriyor.
-* Her 100 TL alışverişe 10 Puan.
-* Ancak kodda bir hata var, puanlar yanlış hesaplanıyor.
-
+* --- 1. VERİ TİPLERİ (DATABASE YAPILARI) ---
 TYPES: BEGIN OF ty_musteri,
-         id    TYPE i,
-         ad    TYPE string,
-         tutar TYPE i,
-         puan  TYPE i,
+         id     TYPE i,
+         ad     TYPE string,
+         sehir  TYPE string,
+         bakiye TYPE i,
        END OF ty_musteri.
 
-DATA: lt_musteri TYPE TABLE OF ty_musteri,
-      ls_musteri TYPE ty_musteri.
+TYPES: BEGIN OF ty_urun,
+         kod   TYPE string,
+         ad    TYPE string,
+         fiyat TYPE i,
+         stok  TYPE i,
+       END OF ty_urun.
 
-FIELD-SYMBOLS: <fs_mus> TYPE ty_musteri.
+TYPES: BEGIN OF ty_satis,
+         belge_no   TYPE string,
+         musteri_id TYPE i,
+         urun_kod   TYPE string,
+         adet       TYPE i,
+         tutar      TYPE i,
+         tarih      TYPE d,
+       END OF ty_satis.
+
+* --- 2. GLOBAL TABLOLAR (VERİTABANI SİMÜLASYONU) ---
+DATA: lt_musteriler TYPE TABLE OF ty_musteri,
+      lt_urunler    TYPE TABLE OF ty_urun,
+      lt_satislar   TYPE TABLE OF ty_satis.
+
+DATA: ls_musteri TYPE ty_musteri,
+      ls_urun    TYPE ty_urun,
+      ls_satis   TYPE ty_satis.
+
+* Raporlama için birleşik yapı
+TYPES: BEGIN OF ty_rapor,
+         durum      TYPE string, " 🟢/🔴
+         belge_no   TYPE string,
+         musteri_ad TYPE string,
+         sehir      TYPE string,
+         urun_ad    TYPE string,
+         adet       TYPE i,
+         toplam     TYPE i,
+         tarih      TYPE d,
+       END OF ty_rapor.
+
+DATA: lt_rapor TYPE TABLE OF ty_rapor,
+      ls_rapor TYPE ty_rapor.
+
+FIELD-SYMBOLS: <fs_mus>  TYPE ty_musteri,
+               <fs_urun> TYPE ty_urun.
+
+* --- 3. GİRİŞ EKRANI (DASHBOARD) ---
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE text-001.
+  PARAMETERS: p_belge TYPE string.             " Belge No Ara
+  PARAMETERS: p_sehir TYPE string.             " Şehre Göre Filtrele
+  PARAMETERS: p_limit TYPE i DEFAULT 1000.     " Min Sipariş Tutarı
+SELECTION-SCREEN END OF BLOCK b1.
+
+SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME TITLE text-002.
+  PARAMETERS: p_analiz AS CHECKBOX.            " Detaylı Analiz Modu?
+  PARAMETERS: p_stok   AS CHECKBOX.            " Stok Uyarısı Göster?
+SELECTION-SCREEN END OF BLOCK b2.
 
 START-OF-SELECTION.
-  " 1. Veri Hazırlığı
-  ls_musteri-id = 1. ls_musteri-ad = 'Ali'.   ls_musteri-tutar = 500. APPEND ls_musteri TO lt_musteri.
-  ls_musteri-id = 2. ls_musteri-ad = 'Veli'.  ls_musteri-tutar = 200. APPEND ls_musteri TO lt_musteri.
-  ls_musteri-id = 3. ls_musteri-ad = 'Ayşe'.  ls_musteri-tutar = 1000. APPEND ls_musteri TO lt_musteri.
 
-  WRITE: '--- HESAPLAMA BAŞLIYOR ---'.
+  " --- 4. VERİ YÜKLEME (INIT) ---
+  " Müşteriler
+  ls_musteri-id = 101. ls_musteri-ad = 'Tech A.Ş.'.    ls_musteri-sehir = 'Istanbul'. ls_musteri-bakiye = 50000. APPEND ls_musteri TO lt_musteriler.
+  ls_musteri-id = 102. ls_musteri-ad = 'Anadolu Ltd'.  ls_musteri-sehir = 'Ankara'.   ls_musteri-bakiye = 20000. APPEND ls_musteri TO lt_musteriler.
+  ls_musteri-id = 103. ls_musteri-ad = 'Ege Gıda'.     ls_musteri-sehir = 'Izmir'.    ls_musteri-bakiye = 5000.  APPEND ls_musteri TO lt_musteriler.
 
-  " 2. Hatalı Döngü
-  LOOP AT lt_musteri ASSIGNING <fs_mus>.
-    
-    " BEKLENEN: Tutar / 10 (Örn: 500 TL -> 50 Puan)
-    " HATALI KOD: Aşağıdaki satırda mantık hatası var.
-    
-    <fs_mus>-puan = <fs_mus>-tutar / 10 + 100. " <-- HATA BURADA! (Fazladan 100 ekliyor)
+  " Ürünler
+  ls_urun-kod = 'U01'. ls_urun-ad = 'Laptop X1'.    ls_urun-fiyat = 15000. ls_urun-stok = 5.   APPEND ls_urun TO lt_urunler.
+  ls_urun-kod = 'U02'. ls_urun-ad = 'Server Pro'.   ls_urun-fiyat = 50000. ls_urun-stok = 2.   APPEND ls_urun TO lt_urunler.
+  ls_urun-kod = 'U03'. ls_urun-ad = 'Tablet Mini'.  ls_urun-fiyat = 8000.  ls_urun-stok = 100. APPEND ls_urun TO lt_urunler.
 
-    " Log koyarak hatayı görelim
-    WRITE: / |DEBUG: Müşteri={ <fs_mus>-ad }, Tutar={ <fs_mus>-tutar }, Hesaplanan Puan={ <fs_mus>-puan }|.
+  " Satış Geçmişi
+  ls_satis-belge_no = 'DOC-001'. ls_satis-musteri_id = 101. ls_satis-urun_kod = 'U02'. ls_satis-adet = 1. ls_satis-tutar = 50000. ls_satis-tarih = '20240110'. APPEND ls_satis TO lt_satislar.
+  ls_satis-belge_no = 'DOC-002'. ls_satis-musteri_id = 103. ls_satis-urun_kod = 'U03'. ls_satis-adet = 5. ls_satis-tutar = 40000. ls_satis-tarih = '20240205'. APPEND ls_satis TO lt_satislar.
+  ls_satis-belge_no = 'DOC-003'. ls_satis-musteri_id = 102. ls_satis-urun_kod = 'U01'. ls_satis-adet = 2. ls_satis-tutar = 30000. ls_satis-tarih = '20240215'. APPEND ls_satis TO lt_satislar.
+  ls_satis-belge_no = 'DOC-004'. ls_satis-musteri_id = 101. ls_satis-urun_kod = 'U03'. ls_satis-adet = 1. ls_satis-tutar = 8000.  ls_satis-tarih = '20240301'. APPEND ls_satis TO lt_satislar.
+
+
+  WRITE: '🚀 ERP SİSTEMİ BAŞLATILIYOR...'.
+  WRITE: /.
+
+  " --- 5. İŞ ZEKASI MOTORU (BUSINESS LOGIC) ---
+  LOOP AT lt_satislar INTO ls_satis.
+
+    " A. Filtreleme (Giriş Ekranı Kontrolleri)
+    IF p_belge IS NOT INITIAL AND ls_satis-belge_no <> p_belge.
+       CONTINUE.
+    ENDIF.
     
+    IF ls_satis-tutar < p_limit.
+       CONTINUE. " Limit altı siparişleri gösterme
+    ENDIF.
+
+    " B. Veri Zenginleştirme (JOIN Mantığı)
+    CLEAR ls_rapor.
+    ls_rapor-belge_no = ls_satis-belge_no.
+    ls_rapor-adet     = ls_satis-adet.
+    ls_rapor-toplam   = ls_satis-tutar.
+    ls_rapor-tarih    = ls_satis-tarih.
+
+    " Müşteri Bilgisini Bul
+    READ TABLE lt_musteriler ASSIGNING <fs_mus> WITH KEY id = ls_satis-musteri_id.
+    IF sy-subrc = 0.
+       " Şehir Filtresi
+       IF p_sehir IS NOT INITIAL AND <fs_mus>-sehir <> p_sehir.
+          CONTINUE.
+       ENDIF.
+       ls_rapor-musteri_ad = <fs_mus>-ad.
+       ls_rapor-sehir      = <fs_mus>-sehir.
+    ENDIF.
+
+    " Ürün Bilgisini Bul
+    READ TABLE lt_urunler ASSIGNING <fs_urun> WITH KEY kod = ls_satis-urun_kod.
+    IF sy-subrc = 0.
+       ls_rapor-urun_ad = <fs_urun>-ad.
+       
+       " Stok Uyarısı (Opsiyonel)
+       IF p_stok = 'X' AND <fs_urun>-stok < 5.
+          WRITE: / |⚠️ UYARI: { <fs_urun>-ad } stoğu kritik seviyede! ({ <fs_urun>-stok } adet)|.
+       ENDIF.
+    ENDIF.
+
+    " C. Durum İkonu Belirleme
+    IF ls_rapor-toplam > 40000.
+       ls_rapor-durum = '🔥 VIP'.
+    ELSE.
+       ls_rapor-durum = '🟢 STD'.
+    ENDIF.
+
+    APPEND ls_rapor TO lt_rapor.
   ENDLOOP.
 
+  " --- 6. ANALİZ MODU (ÖZET RAPOR) ---
+  IF p_analiz = 'X'.
+     DATA: lv_toplam_ciro TYPE i.
+     LOOP AT lt_rapor INTO ls_rapor.
+        lv_toplam_ciro = lv_toplam_ciro + ls_rapor-toplam.
+     ENDLOOP.
+     
+     WRITE: /.
+     WRITE: '📊 FİNANSAL ÖZET:'.
+     WRITE: / |Toplam Ciro: { lv_toplam_ciro } TL|.
+     WRITE: / |Listelenen Sipariş: { lines( lt_rapor ) } adet|.
+     WRITE: '--------------------------------------------------'.
+  ENDIF.
+
+  " --- 7. FİNAL ÇIKTI (ALV) ---
   WRITE: /.
-  WRITE: '--- SONUÇ TABLOSU ---'.
-  
-  " 500 TL için 50 Puan olması gerekirken 150 yazıyor.
-  " Kullanıcı bu loglara bakıp hatayı tespit etmeli.
-  cl_demo_output=>display( lt_musteri ).`,
+  WRITE: 'Rapor oluşturuldu. ALV Grid üzerinden inceleyebilirsiniz.'.
+  cl_demo_output=>display( lt_rapor ).`,
   },
 ];
