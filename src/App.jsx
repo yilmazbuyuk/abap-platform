@@ -6,6 +6,7 @@ import LessonSidebar from "./components/LessonSidebar";
 import SapStatusBar from "./components/SapStatusBar";
 import SapGrid from "./components/SapGrid";
 import SapInputModal from "./components/SapInputModal"; // <--- YENİ
+import { Analytics } from "@vercel/analytics/react";
 
 function App() {
   const [activeLesson, setActiveLesson] = useState(curriculum[0].lessons[0]);
@@ -377,6 +378,7 @@ function App() {
       </div>
 
       <SapStatusBar status={statusMessage} activeLessonId={activeLesson.id} />
+      <Analytics />
     </div>
   );
 }
